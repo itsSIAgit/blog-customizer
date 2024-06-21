@@ -3,6 +3,7 @@ import { Text } from 'components/text';
 import { Option } from './Option';
 
 import styles from './RadioGroup.module.scss';
+import { memo } from 'react';
 
 type RadioGroupProps = {
 	name: string;
@@ -12,33 +13,38 @@ type RadioGroupProps = {
 	title: string;
 };
 
-export const RadioGroup = (props: RadioGroupProps) => {
-	const { name, options, selected, onChange, title } = props;
+export const RadioGroup = memo(
+	(props: RadioGroupProps) => {
+		const { name, options, selected, onChange, title } = props;
 
-	const handleChange = (option: OptionType) => onChange?.(option);
+		const handleChange = (option: OptionType) => onChange?.(option);
 
-	return (
-		<div className={styles.container}>
-			{title && (
-				<>
-					<Text weight={800} size={12} uppercase>
-						{title}
-					</Text>
-				</>
-			)}
-			<div className={styles.group}>
-				{options.map((option) => (
-					<Option
-						key={option.value}
-						groupName={name}
-						value={option.value}
-						title={option.title}
-						selected={selected}
-						onChange={() => handleChange(option)}
-						option={option}
-					/>
-				))}
+		return (
+			<div className={styles.container}>
+				{title && (
+					<>
+						<Text weight={800} size={12} uppercase>
+							{title}
+						</Text>
+					</>
+				)}
+				<div className={styles.group}>
+					{options.map((option) => (
+						<Option
+							key={option.value}
+							groupName={name}
+							value={option.value}
+							title={option.title}
+							selected={selected}
+							onChange={() => handleChange(option)}
+							option={option}
+						/>
+					))}
+				</div>
 			</div>
-		</div>
-	);
-};
+		);
+	},
+	(oldProps, newProps) => oldProps.selected.value === newProps.selected.value
+);
+
+RadioGroup.displayName = 'RadioGroup';
