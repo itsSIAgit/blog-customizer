@@ -1,16 +1,15 @@
-import { ArrowButton } from 'components/arrow-button';
 import { Button } from 'components/button';
 
 import clsx from 'clsx';
 import styles from './ArticleParamsForm.module.scss';
 
-import { CSSProperties, FormEvent, useState } from 'react';
+import { FormEvent, ReactElement, useState } from 'react';
 import { Text } from 'components/text';
 import { Select } from '../select';
 import { RadioGroup } from '../radio-group';
 import { Separator } from '../separator';
 import {
-	OptionType,
+	ArticleStateType,
 	backgroundColors,
 	contentWidthArr,
 	defaultArticleState,
@@ -20,83 +19,47 @@ import {
 } from 'src/constants/articleProps';
 
 type TArticleParamsFormProps = {
-	setPageStyle?: (arg0: CSSProperties) => void;
+	children: ReactElement;
+	setPageStyle: (arg0: ArticleStateType) => void;
+	isMenuOpen: boolean;
 };
 
 export const ArticleParamsForm = ({
+	children,
 	setPageStyle,
+	isMenuOpen,
 }: TArticleParamsFormProps) => {
 	// Технические переменные
-	const [isOpen, setIsOpen] = useState<boolean>(false);
 	const [forceUpdateRadio, setForceUpdateRadio] = useState<boolean>(false);
 
 	// Настройки полей формы
-	const [fontFamilySelect, setFontFamilySelect] = useState<OptionType>(
-		defaultArticleState.fontFamilyOption
-	);
-	const [fontSizeSelect, setFontSizeSelect] = useState<OptionType>(
-		defaultArticleState.fontSizeOption
-	);
-	const [fontColorSelect, setFontColorSelect] = useState<OptionType>(
-		defaultArticleState.fontColor
-	);
-	const [backgroundColorSelect, setBackgroundColorSelect] =
-		useState<OptionType>(defaultArticleState.backgroundColor);
-	const [contentWidthSelect, setContentWidthSelect] = useState<OptionType>(
-		defaultArticleState.contentWidth
-	);
-
-	// Создает пакет стилей для App
-	const createModStyle = (isDefault: boolean) => {
-		// Условная конструкция для решения проблемы, что при сбросе формы значения под useState применяются не сразу
-		return {
-			'--font-family': isDefault
-				? defaultArticleState.fontFamilyOption.value
-				: fontFamilySelect.value,
-			'--font-size': isDefault
-				? defaultArticleState.fontSizeOption.value
-				: fontSizeSelect.value,
-			'--font-color': isDefault
-				? defaultArticleState.fontColor.value
-				: fontColorSelect.value,
-			'--bg-color': isDefault
-				? defaultArticleState.backgroundColor.value
-				: backgroundColorSelect.value,
-			'--container-width': isDefault
-				? defaultArticleState.contentWidth.value
-				: contentWidthSelect.value,
-		} as CSSProperties;
-	};
+	const [newPageStyle, setNewPageStyle] =
+		useState<ArticleStateType>(defaultArticleState);
 
 	// Ф. вызываемая при нажатии кн. сброса формы
 	const resetForm = (e: FormEvent) => {
 		e.preventDefault();
-		setFontFamilySelect(defaultArticleState.fontFamilyOption);
-		setFontSizeSelect(defaultArticleState.fontSizeOption);
-		setFontColorSelect(defaultArticleState.fontColor);
-		setBackgroundColorSelect(defaultArticleState.backgroundColor);
-		setContentWidthSelect(defaultArticleState.contentWidth);
-		setPageStyle?.(createModStyle(true));
+		setPageStyle({ ...defaultArticleState });
+		setNewPageStyle({ ...defaultArticleState });
 		setForceUpdateRadio(!forceUpdateRadio);
 	};
 
 	// Ф. вызываемая при нажатии кн. применения полей формы
 	const applyFormData = (e: FormEvent) => {
 		e.preventDefault();
-		setPageStyle?.(createModStyle(false));
+		setPageStyle({ ...newPageStyle });
 	};
 
 	return (
 		<>
-			<ArrowButton setIsOpen={setIsOpen} />
+			{children}
 			<aside
 				className={clsx({
 					[styles.container]: true,
-					[styles.container_open]: isOpen,
+					[styles.container_open]: isMenuOpen,
 				})}>
 				<form
 					className={styles.form}
-					style={{ gap: 50 }}
 					onSubmit={applyFormData}
 					onReset={resetForm}>
 					<Text as='h2' size={31} weight={800} uppercase>
@@ -104,9 +67,14 @@ export const ArticleParamsForm = ({
 					</Text>
 
 					<Select
-						selected={fontFamilySelect}
+						selected={newPageStyle.fontFamilyOption}
 						options={fontFamilyOptions}
-						onChange={setFontFamilySelect}
+						onChange={(option) =>
+							setNewPageStyle((prevState) => ({
+								...prevState,
+								fontFamilyOption: option,
+							}))
+						}
 						title='Шрифт'
 					/>
 					{/* key тут нужен, т.к. без него ломается "тыкательный" слой радио-кнопок */}
@@ -116,29 +84,49 @@ export const ArticleParamsForm = ({
 						key={forceUpdateRadio ? 'key0' : 'key1'}
 						name='fontSizeButtons'
 						options={fontSizeOptions}
-						selected={fontSizeSelect}
-						onChange={setFontSizeSelect}
+						selected={newPageStyle.fontSizeOption}
+						onChange={(option) =>
+							setNewPageStyle((prevState) => ({
+								...prevState,
+								fontSizeOption: option,
+							}))
+						}
 						title='Размер шрифта'
 					/>
 					<Select
-						selected={fontColorSelect}
+						selected={newPageStyle.fontColor}
 						options={fontColors}
-						onChange={setFontColorSelect}
+						onChange={(option) =>
+							setNewPageStyle((prevState) => ({
+								...prevState,
+								fontColor: option,
+							}))
+						}
 						title='Цвет шрифта'
 					/>
 
 					<Separator />
 
 					<Select
-						selected={backgroundColorSelect}
+						selected={newPageStyle.backgroundColor}
 						options={backgroundColors}
-						onChange={setBackgroundColorSelect}
+						onChange={(option) =>
+							setNewPageStyle((prevState) => ({
+								...prevState,
+								backgroundColor: option,
+							}))
+						}
 						title='Цвет фона'
 					/>
 					<Select
-						selected={contentWidthSelect}
+						selected={newPageStyle.contentWidth}
 						options={contentWidthArr}
-						onChange={setContentWidthSelect}
+						onChange={(option) =>
+							setNewPageStyle((prevState) => ({
+								...prevState,
+								contentWidth: option,
+							}))
+						}
 						title='Ширина контента'
 					/>
 
